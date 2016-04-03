@@ -58,8 +58,7 @@ post '/carts/:cart_id/products' do #parametre product_id
 end
 
 ###### Remove product from the cart #######
-
-delete '/carts/:cart_id/products/:product_id' do #parametre product_id
+delete '/carts/:cart_id/products/:product_id' do 
   cart = Cart.find(params[:cart_id])
   if cart.nil?
   	status 404
@@ -79,3 +78,54 @@ delete '/carts/:cart_id/products/:product_id' do #parametre product_id
 end
  
 ###### Clean cart  ######
+put '/carts/:cart_id/clean' do
+	cart = Cart.find(params[:cart_id])
+	if cart.nil?
+  		status 404
+    else
+	  	product = cart.cart_items
+	  	if product.blank?
+	  		status 404
+	  	else
+	  		product.destroy_all
+	  	end
+    end
+
+end
+
+##### Set quantity for a product #####
+put '/carts/:cart_id/products/:product_id' do #paremetre quantity
+	cart = Cart.find(params[:cart_id])
+	if cart.nil?
+  		status 404
+    else
+    	product = cart.cart_items.where(product_id: params[:product_id])
+	  	if product.blank?
+	  		status 404
+	  	else
+	  		if params[:cart_item][:quantity].to_i >= 1 
+	  			product.first.update(quantity: params[:cart_item][:quantity])
+	  		elsif params[:cart_item][:quantity].to_i == 0
+	  			product.first.destroy
+	  		end
+	  	end
+    end
+
+end
+
+###### Returns detail of the cart #####
+get '/carts/:cart_id' do
+	cart = Cart.find(params[:cart_id])
+	if cart.nil?
+  		status 404
+    else
+    	cart.cart_items.all.to_json
+    end
+
+end
+
+
+
+
+
+
