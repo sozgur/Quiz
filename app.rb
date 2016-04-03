@@ -17,6 +17,20 @@ post '/users' do
   end
 end
 
+get '/users' do
+	User.all.to_json
+end
+
+
+get '/users/:user_id/carts' do
+	user = User.find(params[:user_id])
+	user.carts.to_json
+end
+
+get '/products' do
+	Product.all.to_json
+end
+
 post '/products' do
   product = Product.new(params[:product])
   if product.save
@@ -43,14 +57,17 @@ post '/carts/:cart_id/products' do #parametre product_id
   	status 404
   else
   	if cart.cart_items.blank?
-  		cart_item = CartItem.create(cart_id: cart.id, product_id: params[:cart_item][:product_id], quantity: 1)
+  		cart_item = CartItem.create(cart_id: cart.id, product_id: params[:product_id], quantity: 1)
+  		cart.cart_items.to_json
   	else
-  		product = cart.cart_items.where(product_id: params[:cart_item][:product_id])
-  		if product.blank?
-  			CartItem.create(cart_id: cart.id, product_id: params[:cart_item][:product_id], quantity: 1)
+  		products = cart.cart_items.where(product_id: params[:product_id])
+  		if products.blank?
+  			CartItem.create(cart_id: cart.id, product_id: params[:product_id], quantity: 1)
+  			cart.cart_items.to_json
   		else
-  			quantity = product.first.quantity
-  			product.first.update(quantity: quantity+1)
+  			quantity = products.first.quantity
+  			products.first.update(quantity: quantity+1)
+  			cart.cart_items.to_json
   		end
   	end
  
@@ -63,17 +80,18 @@ delete '/carts/:cart_id/products/:product_id' do
   if cart.nil?
   	status 404
   else
-  	product = cart.cart_items.where(product_id: params[:product_id])
-  	if product.blank?
+  	cart_items = cart.cart_items.where(product_id: params[:product_id])
+  	if cart_items.blank?
   		status 404
   	else
-  		quantity = product.first.quantity
+  		quantity = cart_items.first.quantity
   		if quantity != 1
-  			product.first.update(quantity: quantity-1)
+  			cart_items.first.update(quantity: quantity-1)
   		else
-  			product.first.destroy
+  			cart_items.first.destroy
   		end
   	end
+  	cart.cart_items.to_json
   end
 end
  
@@ -83,12 +101,13 @@ put '/carts/:cart_id/clean' do
 	if cart.nil?
   		status 404
     else
-	  	product = cart.cart_items
-	  	if product.blank?
+	  	cart_items = cart.cart_items
+	  	if cart_items.blank?
 	  		status 404
 	  	else
-	  		product.destroy_all
+	  		cart_items.destroy_all
 	  	end
+	  	cart.id.to_json
     end
 
 end
@@ -99,16 +118,17 @@ put '/carts/:cart_id/products/:product_id' do #paremetre quantity
 	if cart.nil?
   		status 404
     else
-    	product = cart.cart_items.where(product_id: params[:product_id])
-	  	if product.blank?
+    	cart_items = cart.cart_items.where(product_id: params[:product_id])
+	  	if cart_items.blank?
 	  		status 404
 	  	else
-	  		if params[:cart_item][:quantity].to_i >= 1 
-	  			product.first.update(quantity: params[:cart_item][:quantity])
-	  		elsif params[:cart_item][:quantity].to_i == 0
-	  			product.first.destroy
+	  		if params[:quantity].to_i >= 1 
+	  			cart_items.first.update(quantity: params[:quantity])
+	  		elsif params[:quantity].to_i == 0
+	  			cart_items.first.destroy
 	  		end
 	  	end
+	  	cart.cart_items.to_json
     end
 
 end
