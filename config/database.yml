@@ -1,0 +1,8 @@
+development:
+  adapter: mysql2
+  encoding: unicode
+  host: localhost
+  database: quiz
+  username: root
+  password: '*****'
+  encoding: "utf8"
