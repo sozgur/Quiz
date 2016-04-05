@@ -1,10 +1,10 @@
 # Quiz
 
 ##Models:
-**User:** username, Name, email, password 
-**Product:** name, price
-**Cart:** identifier, user[FK] 
-**CartItem:** cart[FK], product[FK], quantity
+>**User:** username, Name, email, password 
+>**Product:** name, price
+>**Cart:** identifier, user[FK] 
+>**CartItem:** cart[FK], product[FK], quantity
 
 ##API Implementation:
 **Endpoints:**
